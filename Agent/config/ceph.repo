@@ -1,0 +1,7 @@
+[ceph-noarch]
+name=Ceph noarch packages
+baseurl=http://mirrors.ustc.edu.cn/ceph/rpm-luminous/el7/noarch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=http://mirrors.ustc.edu.cn/ceph/keys/release.asc
