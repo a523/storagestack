@@ -1,5 +1,6 @@
 import logging
 from functools import wraps
+import subprocess
 
 
 def set_func_metadata(func):
@@ -29,10 +30,13 @@ def general_log(logger_name='agent'):
                 args_name = func.__code__.co_varnames
                 args_dict = dict(zip(args_name, args))
             if kwargs:
-                args_dict = args_dict.update(kwargs)
-            logger.debug('args: {}'.format(args_dict))
+                args_dict.update(kwargs)
+            logger.debug('Args: {}'.format(args_dict))
             try:
                 return func(*args, **kwargs)
+            except subprocess.CalledProcessError as e:
+                logger.exception("{0} Why: {1}".format(e, e.stderr))
+                raise e
             except Exception as e:
                 logger.exception(e)
                 raise e
