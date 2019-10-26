@@ -29,6 +29,7 @@ def run_script(script):
             run_cmd(row)
         elif isinstance(row, dict):
             exe = row.get('exe')
+            cwd = row.get('cwd')
             opt = row.get('opt', False)
             try_num = row.get('try', 1)  # default try once
             def_ok = row.get('def_ok')
@@ -37,17 +38,16 @@ def run_script(script):
                 for i in range(try_num):
                     try:
                         if 'timeout' not in row.keys():
-                            ret = run_cmd(cmd=exe, check=not opt)
+                            ret = run_cmd(cmd=exe, cwd=cwd, check=not opt)
                         else:
                             timeout = row['timeout']
-                            ret = run_cmd(cmd=exe, timeout=timeout, check=not opt)
+                            ret = run_cmd(cmd=exe, timeout=timeout, cwd=cwd, check=not opt)
 
                         if save_out:
                             if not (isinstance(save_out, str) or isinstance(save_out, int) or isinstance(save_out,
                                                                                                          tuple)):
                                 raise errors.ScriptConfigError("Arg save_out mast be not variable")
                             result[save_out] = ret.stdout
-                            return result
                     except Exception as e:
                         if i >= try_num - 1:
                             raise e
@@ -56,6 +56,7 @@ def run_script(script):
 
         elif isinstance(row, list) or isinstance(row, tuple):
             return run_script(row)
+    return result
 
 
 def check_ok(def_ok):

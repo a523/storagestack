@@ -28,6 +28,16 @@ def test_run_script():
             'exe': 'cat /tmp/test/1.txt',
             'save_out': 'result',
         },
+        {
+            'exe': 'touch 2.txt',
+            'cwd': '/tmp/test',
+            'def_ok': 'if [-f /tmp/test/2.txt];then echo 0 ; else echo 1;fi',
+        },
+        {
+            'exe': 'exit 1',
+            'cwd': '/tmp/test',
+            'opt': True
+        }
     ]
     ret = run_script(script)
     assert ret['result'] == "hello\n"
