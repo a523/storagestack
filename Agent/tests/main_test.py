@@ -17,6 +17,19 @@ def test_run_cmd_error():
 
 
 def test_run_script():
+    test_opt_and_cwd = [
+        {
+            'exe': 'touch 2.txt',
+            'cwd': '/tmp/test',
+            'def_ok': 'if [-f /tmp/test/2.txt];then echo 0 ; else echo 1;fi',
+        },
+        {
+            'exe': 'exit 1',
+            'cwd': '/tmp/test',
+            'opt': True
+        }
+    ]
+
     script = [
         "ls",
         "mkdir -p /tmp/test/",
@@ -28,16 +41,7 @@ def test_run_script():
             'exe': 'cat /tmp/test/1.txt',
             'save_out': 'result',
         },
-        {
-            'exe': 'touch 2.txt',
-            'cwd': '/tmp/test',
-            'def_ok': 'if [-f /tmp/test/2.txt];then echo 0 ; else echo 1;fi',
-        },
-        {
-            'exe': 'exit 1',
-            'cwd': '/tmp/test',
-            'opt': True
-        }
+        *test_opt_and_cwd,
     ]
     ret = run_script(script)
     assert ret['result'] == "hello\n"
