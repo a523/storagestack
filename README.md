@@ -1,4 +1,4 @@
-# storagestatck
+# storagestack
 >让ceph更容易使用
 
 #### 小目标：
