@@ -45,7 +45,3 @@ def test_run_script():
     ]
     ret = run_script(script)
     assert ret['result'] == "hello\n"
-
-
-def test_yaml_config():
-    assert config.get('username') == 'easy_ceph'
