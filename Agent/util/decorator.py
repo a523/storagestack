@@ -33,7 +33,9 @@ def general_log(logger_name='agent'):
                 args_dict.update(kwargs)
             logger.debug('Args: {}'.format(args_dict))
             try:
-                return func(*args, **kwargs)
+                ret = func(*args, **kwargs)
+                logger.debug('return: {}'.format(ret))
+                return ret
             except subprocess.CalledProcessError as e:
                 logger.exception("{0} Why: {1}".format(e, e.stderr))
                 raise e
