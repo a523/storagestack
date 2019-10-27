@@ -1,7 +1,7 @@
 import pytest
-from Agent.exe import run_cmd, run_script
-
 import subprocess
+from Agent.exe import run_cmd, run_script
+from Agent.setting import config
 
 
 def test_run_cmd_success():
@@ -45,3 +45,7 @@ def test_run_script():
     ]
     ret = run_script(script)
     assert ret['result'] == "hello\n"
+
+
+def test_yaml_config():
+    assert config.get('username') == 'easy_ceph'

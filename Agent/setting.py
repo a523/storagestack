@@ -1,4 +1,6 @@
 import os
+import pathlib
+import yaml
 
 LOGGING = {
     'version': 1,
@@ -32,4 +34,18 @@ LOGGING = {
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BASE_DIR = pathlib.Path(__file__).parent
+if os.path.exists('/etc/storage_stack/default.yaml'):
+    config_file = '/etc/storage_stack/default.yaml'
+else:
+    config_file = BASE_DIR / 'config' / 'default.yaml'
+
+
+def get_config(path):
+    with open(path) as f:
+        config = yaml.safe_load(f)
+    return config
+
+
+config = get_config(config_file)
