@@ -45,3 +45,17 @@ def test_run_script():
     ]
     ret = run_script(script)
     assert ret['result'] == "hello\n"
+
+
+def test_list_exe_script():
+    script = [
+        {
+            'exe': ('mkdir -p ./test2', 'touch ./test2/2.txt', 'echo 1 > ./test2/2.txt', 'cat ./test2/2.txt'),
+            'opt': True,
+            'save_out': 'out',
+            'cwd': '/tmp/'
+        },
+    ]
+
+    ret = run_script(script)
+    assert str(ret.get('out')).strip() == '1'

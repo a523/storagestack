@@ -40,11 +40,11 @@ def run_script(script):
                     try:
                         # 增加timeout参数并执行命令
                         if 'timeout' not in row.keys():
-                            ret = run_cmd(cmd=exe, cwd=cwd, check=not opt)
+                            ret = run_exe(exe=exe, cwd=cwd, check=not opt)
                         else:
                             timeout = row['timeout']
-                            ret = run_cmd(cmd=exe, timeout=timeout, cwd=cwd, check=not opt)
-                        if opt and ret.returncode != 0:
+                            ret = run_exe(exe=exe, timeout=timeout, cwd=cwd, check=not opt)
+                        if opt and (not ret or ret.returncode != 0):
                             logger.warning('Execute command：“{}” failed, It\'s optional'.format(exe))
                             continue
 
@@ -53,9 +53,10 @@ def run_script(script):
                             if not (isinstance(save_out, str) or isinstance(save_out, int) or isinstance(save_out,
                                                                                                          tuple)):
                                 raise errors.ScriptConfigError("Arg save_out mast be not variable")
-                            result[save_out] = ret.stdout
+                            if ret:
+                                result[save_out] = ret.stdout
                     except subprocess.SubprocessError as e:
-                        logger.warning('Execute command：“{}” failed, ready to retry: {}/{}'.format(exe, i+1, try_num))
+                        logger.warning('Execute command：“{}” failed, ready to retry: {}/{}'.format(exe, i + 1, try_num))
                         if i >= try_num - 1:
                             raise e
                     else:
@@ -63,9 +64,31 @@ def run_script(script):
             else:
                 logger.debug('Ignore cmd {}, because check define status is ok'.format(exe))
 
-        elif isinstance(row, list) or isinstance(row, tuple):
-            return run_script(row)
+        else:
+            raise errors.ScriptConfigError('The row of script must be str or dict')
     return result
+
+
+def run_exe(exe, *args, **kwargs):
+    ret = None
+    if isinstance(exe, str):
+        ret = run_cmd(cmd=exe, *args, **kwargs)
+    elif isinstance(exe, list) or isinstance(exe, tuple):
+        check = kwargs.get('check')
+        if not exe:
+            raise errors.ScriptConfigError('Arg exe is None')
+        for i, cmd in enumerate(exe):
+            r = run_cmd(cmd=cmd, *args, **kwargs)
+
+            if (check is False) and (r.returncode != 0):  # 当整体为可选的时候，任何一个有失败， 后面的不执行
+                break
+
+            if i == len(exe) - 1:
+                ret = r  # only save last return
+
+    else:
+        raise errors.ScriptConfigError('Arg exe must be str or iterable object')
+    return ret
 
 
 def check_ok(def_ok):
