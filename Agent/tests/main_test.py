@@ -1,7 +1,6 @@
 import pytest
 import subprocess
-from Agent.exe import run_cmd, run_script
-from Agent.setting import config
+from Agent.ops.exe import run_cmd, run_script
 
 
 def test_run_cmd_success():
