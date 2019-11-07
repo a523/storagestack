@@ -3,4 +3,5 @@ djangorestframework==3.10.3
 pytz==2019.3
 sqlparse==0.3.0
 pytest==5.2.1
+gunicorn==19.9.0
 

@@ -1,5 +1,5 @@
 from Agent import views
 
 paths = [
-    '/', views.IndexViews
+    ('/hello', views.HelloViews()),
 ]

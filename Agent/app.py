@@ -2,12 +2,19 @@ import falcon
 from Agent.urls import paths
 
 
-def create_app():
-    api = falcon.API()
+def add_routes(api, paths):
     for path in paths:
         api.add_route(*path)
+
+
+def create_app():
+    api = falcon.API()
+    add_routes(api, paths)
     return api
 
 
 def get_app():
     return create_app()
+
+
+api = get_app()
