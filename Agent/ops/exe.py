@@ -1,4 +1,5 @@
 import subprocess
+import time
 from Agent.util.decorator import general_log
 import logging
 from Agent import errors
@@ -61,6 +62,7 @@ def run_script(script):
                             raise e
                     else:
                         break
+                    time.sleep(i + 1 if i < 120 else 120)
             else:
                 logger.debug('Ignore cmd {}, because check define status is ok'.format(exe))
 
