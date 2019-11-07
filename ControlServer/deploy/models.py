@@ -1,3 +1,6 @@
 from django.db import models
 
-# Create your models here.
+
+class Nodes(models.Model):
+    ip = models.GenericIPAddressField()
+    create_time = models.DateTimeField(auto_created=True)
