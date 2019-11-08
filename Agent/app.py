@@ -13,8 +13,4 @@ def create_app():
     return api
 
 
-def get_app():
-    return create_app()
-
-
-api = get_app()
+api = create_app()

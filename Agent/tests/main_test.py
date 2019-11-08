@@ -1,8 +1,16 @@
 import pytest
 import subprocess
+import falcon
+from falcon import testing
 from Agent.ops.exe import run_cmd, run_script
 from Agent.ops import deploy
 from unittest.mock import MagicMock, patch
+from Agent import app
+
+
+@pytest.fixture
+def client():
+    return testing.TestClient(app.api)
 
 
 def test_run_cmd_success():
@@ -70,3 +78,13 @@ def test_get_local_hostname():
         assert 'hostname' in mock_func.call_args[0]
         mock_func.assert_called()
         assert hostname == 'hostname'
+
+
+def test_api_get_hostname(client):
+    run_ret = MagicMock()
+    run_ret.stdout = 'hostname\n'
+    with patch('subprocess.run', return_value=run_ret, autospec=True) as mock_func:
+        resp = client.simulate_get('/hostname')
+        mock_func.assert_called()
+        assert str(resp.content, encoding='utf-8') == 'hostname'
+        assert resp.status == falcon.HTTP_OK
