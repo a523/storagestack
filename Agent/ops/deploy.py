@@ -1,5 +1,6 @@
 import os
 from Agent.setting import BASE_DIR, config
+from Agent.ops import exe
 
 
 # 部署前环境清理
@@ -42,3 +43,8 @@ def preflight_script():
 
 def update_all_hosts():
     pass
+
+
+def get_local_hostname():
+    hostname = exe.run_cmd('hostname').stdout.strip()
+    return hostname

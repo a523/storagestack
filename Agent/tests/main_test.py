@@ -1,6 +1,8 @@
 import pytest
 import subprocess
 from Agent.ops.exe import run_cmd, run_script
+from Agent.ops import deploy
+from unittest.mock import MagicMock, patch
 
 
 def test_run_cmd_success():
@@ -58,3 +60,13 @@ def test_list_exe_script():
 
     ret = run_script(script)
     assert str(ret.get('out')).strip() == '1'
+
+
+def test_get_local_hostname():
+    run_ret = MagicMock()
+    run_ret.stdout = 'hostname\n'
+    with patch('subprocess.run', return_value=run_ret, autospec=True) as mock_func:
+        hostname = deploy.get_local_hostname()
+        assert 'hostname' in mock_func.call_args[0]
+        mock_func.assert_called()
+        assert hostname == 'hostname'
