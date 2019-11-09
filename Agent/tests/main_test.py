@@ -86,5 +86,5 @@ def test_api_get_hostname(client):
     with patch('subprocess.run', return_value=run_ret, autospec=True) as mock_func:
         resp = client.simulate_get('/hostname')
         mock_func.assert_called()
-        assert str(resp.content, encoding='utf-8') == 'hostname'
+        assert resp.text == 'hostname'
         assert resp.status == falcon.HTTP_OK
