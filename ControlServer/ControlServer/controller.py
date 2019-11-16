@@ -1,6 +1,6 @@
 """连接节点，发送请求"""
 from typing import List
-from ControlServer.utils import is_ok
+from .utils import is_ok
 from django.conf import settings
 import aiohttp
 import asyncio
@@ -24,13 +24,13 @@ class GetHostname(Hostname):
     method = 'get'
 
 
-class Controller:
+class BaseController:
     _loop = None
 
     def __init__(self):
-        if not Controller._loop:
-            Controller._loop = asyncio.get_event_loop()
-        self.loop = Controller._loop
+        if not BaseController._loop:
+            BaseController._loop = asyncio.get_event_loop()
+        self.loop = BaseController._loop
 
     @staticmethod
     def gen_node_agent_url(ip, path):
@@ -43,6 +43,59 @@ class Controller:
         url = "{scheme}://{ip}:{port}/{path}".format(scheme=scheme, ip=ip, port=port, path=path)
         return url
 
+    async def _request(self, session, node, task):
+        async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
+                                   **task.kwargs) as resp:
+            result = await resp.text()
+            return result
+
+    async def single_node_request(self, node, request_task):
+        async with aiohttp.ClientSession() as session:
+            result = await self._request(session, node, request_task)
+            return result
+
+    def make_single_node_multi_tasks(self, node, request_tasks):
+        tasks = []
+        for task in request_tasks:
+            tasks.append(self.single_node_request(node, task))
+        return tasks
+
+
+class Controller(BaseController):
+    def __init__(self, node: str):
+        super().__init__()
+        self.node = node
+
+    def run_tasks(self, request_tasks: List[AgentTask]):
+        return self.loop.run_until_complete(asyncio.gather(*self.make_single_node_multi_tasks(self.node, request_tasks)))
+
+    def run_task(self, request_task):
+        return self.loop.run_until_complete(self.single_node_request(self.node, request_task))
+
+
+class Controllers(BaseController):
+    def __init__(self, nodes: List[str]):
+        super().__init__()
+        self.nodes = nodes
+
+    def make_multi_node_tasks(self, request_task):
+        return [self.single_node_request(node, request_task) for node in self.nodes]
+
+    def make_multi_node_multi_tasks(self, request_tasks: List[AgentTask]):
+        tasks = []
+        for node in self.nodes:
+            node_tasks = self.make_single_node_multi_tasks(node, request_tasks)
+            tasks += node_tasks
+        return tasks
+
+    def run_tasks(self, request_tasks: List[AgentTask]):
+        return self.loop.run_until_complete(asyncio.gather(*self.make_multi_node_multi_tasks(request_tasks)))
+
+    def run_task(self, request_task):
+        return self.loop.run_until_complete(asyncio.gather(*self.make_multi_node_tasks(request_task)))
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 class SingTaskResults:
     def __init__(self):
@@ -51,60 +104,17 @@ class SingTaskResults:
 
 
 class Result:
-    def __init__(self, status, val, error, node=None):
-        self.status = status
+    def __init__(self, status_code, val, error, node=None):
+        self.status_code = status_code
         self.val = val
         self.error = error
         self.node = node
 
-
-class MulController(Controller):
-    def __init__(self, nodes):
-        super().__init__()
-        self.nodes = nodes
-
-    async def _request(self, session, node, task, ):
-        async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
-                                   **task.kwargs) as resp:
-            if task.task_key:
-                task_result.setdefault(task.task_key, ([], []))
-            if is_ok(resp.status):
-                val = await resp.json()
-                if task.task_key:
-                    task_result[task.task_key][0].append({node: val})
-            else:
-                val = await resp.text()
-                if task.task_key:
-                    task_result[task.task_key][1].append({node: val})
-
-    async def mul_tasks(self, *request_tasks):
-        tasks = []
-        for node in self.nodes:
-            async with aiohttp.ClientSession() as session:
-                for task in request_tasks:
-                     tasks.append(self._request(session, node, task))
-        return tasks
+    @property
+    def status(self):
+        return is_ok(self.status_code)
 
 
-    async def _run_task(self, task):
-        res = ([], [])
-        for node in self.nodes:
-            async with aiohttp.ClientSession() as session:
-
-                async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
-                                           **task.kwargs) as resp:
-                    if is_ok(resp.status):
-                        val = await resp.json()
-                        if task.task_key:
-                            res[0].append({node: val})
-                    else:
-                        val = await resp.text()
-                        if task.task_key:
-                            res[1].append({node: val})
-        return res
-
-    def mul_async_request(self, *request_tasks):
-        self.loop.run_until_complete(asyncio.gather(self.mul_tasks(*request_tasks)))
 
 
 result = {

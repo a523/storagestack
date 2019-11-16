@@ -46,10 +46,10 @@ class Nodes(APIView):
 
         # models.Nodes()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get('http://127.0.0.1/hostname') as resp:
-                print(resp.status)
-                print(await resp.text())
+        # async with aiohttp.ClientSession() as session:
+        #     async with session.get('http://127.0.0.1/hostname') as resp:
+        #         print(resp.status)
+        #         print(await resp.text())
 
 
         # 免密钥
