@@ -22,6 +22,7 @@ class Hostname(AgentTask):
 
 class GetHostname(Hostname):
     method = 'get'
+    format_type = 'text'
 
 
 class BaseController:
@@ -46,7 +47,12 @@ class BaseController:
     async def _request(self, session, node, task):
         async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
                                    **task.kwargs) as resp:
-            result = await resp.text()
+            status_ok = is_ok(resp.status)
+            if status_ok and task.format_type == 'json':
+                val = await resp.json()
+            else:
+                val = await resp.text()
+            result = Result(resp, val, status_ok, node, task.path)
             return result
 
     async def single_node_request(self, node, request_task):
@@ -67,7 +73,8 @@ class Controller(BaseController):
         self.node = node
 
     def run_tasks(self, request_tasks: List[AgentTask]):
-        return self.loop.run_until_complete(asyncio.gather(*self.make_single_node_multi_tasks(self.node, request_tasks)))
+        return self.loop.run_until_complete(
+            asyncio.gather(*self.make_single_node_multi_tasks(self.node, request_tasks)))
 
     def run_task(self, request_task):
         return self.loop.run_until_complete(self.single_node_request(self.node, request_task))
@@ -95,8 +102,6 @@ class Controllers(BaseController):
         return self.loop.run_until_complete(asyncio.gather(*self.make_multi_node_tasks(request_task)))
 
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 class SingTaskResults:
     def __init__(self):
         self.succ_list = []
@@ -104,25 +109,16 @@ class SingTaskResults:
 
 
 class Result:
-    def __init__(self, status_code, val, error, node=None):
-        self.status_code = status_code
+    def __init__(self, resp: aiohttp.ClientResponse, val, is_ok, node=None, path=None):
+        self.status_code = resp.status
         self.val = val
-        self.error = error
         self.node = node
+        self.path = path
+        self.url = resp.url
+        self.is_ok = is_ok
 
-    @property
-    def status(self):
-        return is_ok(self.status_code)
+    def __repr__(self):
+        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.path)
 
-
-
-
-result = {
-    "hostname": ([
-                     {"192.168.0.1": 'ceph-node1'},
-                     {"192.168.0.2": 'ceph-node2'},
-                 ],
-                 [{"192.168.0.3": 'ceph-node3'}]
-    ),
-    "other_task": ([], [])
-}
+    def __str__(self):
+        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.path)
