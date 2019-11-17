@@ -123,3 +123,35 @@ STATIC_URL = '/static/'
 
 AGENT_PORT = 8600
 AGENT_SCHEME = 'http'
+
+LOG_PATH_PREFIX = '/var/log/storage_stack' if os.name is 'posix' else os.path.join(os.path.expanduser('~'))
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(levelname)s] [%(asctime)s] %(module)s.%(funcName)s: %(message)s',
+            'datefmt': '%m-%d %H:%M:%S'
+        }
+    },
+    'handlers': {
+        'control_server': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',  # 日志文件定时删除
+            'filename': os.path.join(LOG_PATH_PREFIX, 'control_server.log'),
+            'when': 'D',
+            'interval': 10,
+            'backupCount': 2,
+            'encoding': 'utf-8',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'control_server': {
+            'handlers': ['control_server'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+    }
+}

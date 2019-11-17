@@ -1,9 +1,12 @@
 """连接节点，发送请求"""
 from typing import List
+import logging
 from .utils import is_ok
 from django.conf import settings
 import aiohttp
 import asyncio
+
+logger = logging.getLogger('control_server')
 
 
 class AgentTask:
@@ -14,15 +17,10 @@ class AgentTask:
     def __init__(self, task_key=None, **kwargs):
         self.task_key = task_key
         self.kwargs = kwargs
+        self.name = None
 
-
-class Hostname(AgentTask):
-    path = 'hostname'
-
-
-class GetHostname(Hostname):
-    method = 'get'
-    format_type = 'text'
+    def __str__(self):
+        return "name: {0}, method: {1}, path: {2}".format(self.name, self.method, self.path)
 
 
 class BaseController:
@@ -48,11 +46,16 @@ class BaseController:
         async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
                                    **task.kwargs) as resp:
             status_ok = is_ok(resp.status)
-            if status_ok and task.format_type == 'json':
-                val = await resp.json()
+            if status_ok:
+                if task.format_type == 'json':
+                    val = await resp.json()
+                else:
+                    val = await resp.text()
+                logger.debug('{0}: Request {1} agent {2} succeed'.format(resp.status, resp.method, resp.url))
             else:
                 val = await resp.text()
-            result = Result(resp, val, status_ok, node, task.path)
+                logger.error("{0}: Request {1} agent {2} failed".format(resp.status, resp.method, resp.url))
+            result = Result(resp, val, status_ok, node, task)
             return result
 
     async def single_node_request(self, node, request_task):
@@ -109,16 +112,22 @@ class SingTaskResults:
 
 
 class Result:
-    def __init__(self, resp: aiohttp.ClientResponse, val, is_ok, node=None, path=None):
+    def __init__(self, resp: aiohttp.ClientResponse, val, ok, node, task: AgentTask):
         self.status_code = resp.status
         self.val = val
         self.node = node
-        self.path = path
         self.url = resp.url
-        self.is_ok = is_ok
+        self.method = resp.method
+        self.task = task
+        self.ok = ok
 
     def __repr__(self):
-        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.path)
+        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.task.path)
 
     def __str__(self):
-        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.path)
+        return "{2} {3}, result: {0} '{1}'".format(self.status_code, self.val, self.node, self.task.path)
+
+
+class SingleNodeMultiTasksResult:
+    def __init__(self, is_all_succ=None):
+        self.is_all_succ = is_all_succ
