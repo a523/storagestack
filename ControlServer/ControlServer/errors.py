@@ -22,10 +22,11 @@ class RequestAgentError(ControlServerError):
 class TaskException(Exception):
     """任务在Node上执行时出错"""
 
-    def __init__(self, node, task):
+    def __init__(self, node, task, mess=''):
         super().__init__(node, task)
         self.node = node
         self.task = task
+        self.mess = mess
 
     def __str__(self):
-        return "Failed to '{0}' on node {1}".format(self.task.name, self.node)
+        return "Failed to '{0}' on node {1}. {2}".format(self.task.name, self.node, self.mess)
