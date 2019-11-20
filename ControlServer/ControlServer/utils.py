@@ -1,4 +1,3 @@
-import requests
 from django.conf import settings
 
 
@@ -19,5 +18,3 @@ def is_ok(code):
         return True
     else:
         return False
-# def request_agent(ip, path, method, args=None):
-#     pass
