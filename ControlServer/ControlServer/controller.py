@@ -1,26 +1,15 @@
 """连接节点，发送请求"""
 from typing import List
 import logging
-from .utils import is_ok
-from django.conf import settings
 import aiohttp
 import asyncio
 
+from . import errors
+from .utils import is_ok
+from django.conf import settings
+from .constant import *
+
 logger = logging.getLogger('control_server')
-
-
-class AgentTask:
-    path = ''
-    method = None
-    format_type = 'json'
-
-    def __init__(self, task_key=None, **kwargs):
-        self.task_key = task_key
-        self.kwargs = kwargs
-        self.name = None
-
-    def __str__(self):
-        return "name: {0}, method: {1}, path: {2}".format(self.name, self.method, self.path)
 
 
 class BaseController:
@@ -54,7 +43,9 @@ class BaseController:
                 logger.debug('{0}: Request {1} agent {2} succeed'.format(resp.status, resp.method, resp.url))
             else:
                 val = await resp.text()
-                logger.error("{0}: Request {1} agent {2} failed".format(resp.status, resp.method, resp.url))
+                logger.error("{0}: Request {1} agent {2} failed. {3}".format(resp.status, resp.method, resp.url, val))
+                if task.raise_exc:
+                    raise errors.TaskException(node, task, val)
             result = Result(resp, val, status_ok, node, task)
             return result
 
@@ -71,22 +62,27 @@ class BaseController:
 
 
 class Controller(BaseController):
-    def __init__(self, node: str):
+    def __init__(self, node: str, return_exceptions=False):
         super().__init__()
         self.node = node
+        self.return_exceptions = return_exceptions
 
     def run_tasks(self, request_tasks: List[AgentTask]):
-        return self.loop.run_until_complete(
-            asyncio.gather(*self.make_single_node_multi_tasks(self.node, request_tasks)))
+        results = self.loop.run_until_complete(
+            asyncio.gather(*self.make_single_node_multi_tasks(self.node, request_tasks),
+                           return_exceptions=self.return_exceptions))
+        multi_result = MultiTasksResult(results)
+        return multi_result
 
     def run_task(self, request_task):
         return self.loop.run_until_complete(self.single_node_request(self.node, request_task))
 
 
 class Controllers(BaseController):
-    def __init__(self, nodes: List[str]):
+    def __init__(self, nodes: List[str], return_exceptions=False):
         super().__init__()
         self.nodes = nodes
+        self.return_exceptions = return_exceptions
 
     def make_multi_node_tasks(self, request_task):
         return [self.single_node_request(node, request_task) for node in self.nodes]
@@ -99,10 +95,18 @@ class Controllers(BaseController):
         return tasks
 
     def run_tasks(self, request_tasks: List[AgentTask]):
-        return self.loop.run_until_complete(asyncio.gather(*self.make_multi_node_multi_tasks(request_tasks)))
+        return self.loop.run_until_complete(
+            asyncio.gather(*self.make_multi_node_multi_tasks(request_tasks), return_exceptions=self.return_exceptions))
 
     def run_task(self, request_task):
-        return self.loop.run_until_complete(asyncio.gather(*self.make_multi_node_tasks(request_task)))
+        return self.loop.run_until_complete(
+            asyncio.gather(*self.make_multi_node_tasks(request_task), return_exceptions=self.return_exceptions))
+
+    def add_node(self, node):
+        self.nodes.append(node)
+
+    def add_nodes(self, nodes):
+        self.nodes = self.nodes + nodes
 
 
 class SingTaskResults:
@@ -131,3 +135,28 @@ class Result:
 class SingleNodeMultiTasksResult:
     def __init__(self, is_all_succ=None):
         self.is_all_succ = is_all_succ
+
+
+class MultiTasksResult:
+    def __init__(self, results: List):
+        self.results = results
+
+    def _analyze_results(self):
+        succ_list = []
+        failed_list = []
+        status = None
+        for result in self.results:
+            if result.ok:
+                succ_list.append(result)
+            else:
+                failed_list.append(result)
+        if succ_list == len(self.results):
+            status = ALL_SUCCESS
+        elif succ_list and failed_list:
+            status = PART_SUCCESS
+        elif failed_list == len(self.results):
+            status = ALL_FAILED
+        return succ_list, failed_list, status
+
+    def __iter__(self):
+        return iter(self.results)
