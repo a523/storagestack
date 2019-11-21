@@ -1,6 +1,7 @@
 import os
 from Agent.setting import BASE_DIR, config
 from Agent.ops import exe
+from python_hosts import Hosts, HostsEntry
 
 
 # 部署前环境清理
@@ -41,8 +42,16 @@ def preflight_script():
     return preflight
 
 
-def update_all_hosts():
-    pass
+def update_all_hosts(hosts_list):
+    hosts = Hosts('/home/xin/hosts')
+    entries = []
+    for row in hosts_list:
+        entry = HostsEntry(entry_type=row.get('ip_type', 'ipv4'), address=row["ip"], names=[row['hostname']])
+        entries.append(entry)
+
+    ret = hosts.add(entries, force=True, merge_names=True)
+    hosts.write()
+    return ret
 
 
 def get_local_hostname():
