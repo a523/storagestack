@@ -1,8 +1,8 @@
 import subprocess
 import time
-from Agent.utils.decorator import general_log
+from utils.decorator import general_log
 import logging
-from Agent import errors
+import errors
 
 logger = logging.getLogger('agent.exe')
 

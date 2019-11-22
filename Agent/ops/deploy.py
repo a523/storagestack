@@ -1,6 +1,6 @@
 import os
-from Agent.setting import BASE_DIR, config
-from Agent.ops import exe
+from setting import BASE_DIR, config
+from ops import exe
 from python_hosts import Hosts, HostsEntry
 
 

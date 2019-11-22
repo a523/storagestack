@@ -1,4 +1,4 @@
-from Agent import views
+import views
 
 paths = [
     ('/hello', views.HelloViews()),

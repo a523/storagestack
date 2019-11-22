@@ -1,6 +1,6 @@
 import json
 import falcon
-from Agent.ops import deploy
+from ops import deploy
 
 
 class HelloViews:
