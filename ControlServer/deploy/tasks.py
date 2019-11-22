@@ -1,17 +1,4 @@
-class AgentTask:
-    path = ''
-    method = None
-    format_type = 'json'
-
-    def __init__(self, raise_exc=True, **kwargs):
-        self.raise_exc = raise_exc
-        self.kwargs = kwargs
-        self.name = None
-        self.data = None
-        self.params = None
-
-    def __str__(self):
-        return "name: {0}, method: {1}, path: {2}".format(self.name, self.method, self.path)
+from ControlServer.controller import AgentTask
 
 
 class Hostname(AgentTask):
@@ -21,6 +8,7 @@ class Hostname(AgentTask):
         self.method = 'get'
         self.format_type = 'text'
         self.name = 'get hostname'
+        return self
 
 
 class SSHKey(AgentTask):
@@ -31,6 +19,7 @@ class SSHKey(AgentTask):
         self.format_type = 'text'
         self.name = 'generate ssh key'
         self.data = data
+        return self
 
 
 class Hosts(AgentTask):
@@ -42,4 +31,4 @@ class Hosts(AgentTask):
         self.format_type = 'text'
         self.name = 'update hosts'
         self.data = data
-
+        return self

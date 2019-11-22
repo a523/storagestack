@@ -1,6 +1,4 @@
-import requests
 from rest_framework.views import APIView
-from ControlServer import errors, utils
 from deploy import ops
 
 

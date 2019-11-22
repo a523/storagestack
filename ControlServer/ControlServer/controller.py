@@ -12,11 +12,29 @@ from .constant import *
 logger = logging.getLogger('control_server')
 
 
+class AgentTask:
+    path = ''
+    method = None
+    format_type = 'json'
+
+    def __init__(self, raise_exc=True, **kwargs):
+        self.raise_exc = raise_exc
+        self.kwargs = kwargs
+        self.name = None
+        self.data = None
+        self.params = None
+
+    def __str__(self):
+        return "name: {0}, method: {1}, path: {2}".format(self.name, self.method, self.path)
+
+
 class BaseController:
     _loop = None
 
     def __init__(self):
         if not BaseController._loop:
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
             BaseController._loop = asyncio.get_event_loop()
         self.loop = BaseController._loop
 
