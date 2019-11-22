@@ -26,10 +26,11 @@ class Hostname(AgentTask):
 class SSHKey(AgentTask):
     path = 'ssh-key'
 
-    def generate(self):
+    def append(self, data):
         self.method = 'post'
         self.format_type = 'text'
         self.name = 'generate ssh key'
+        self.data = data
 
 
 class Hosts(AgentTask):

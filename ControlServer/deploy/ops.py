@@ -1,5 +1,8 @@
 """一些复杂的业务逻辑"""
+import os
 from ControlServer.controller import Controllers, Controller
+from ControlServer.exe import run_cmd
+from ControlServer.constant import PUB_KEY_FILE
 from . import tasks, models
 
 
@@ -10,7 +13,8 @@ def add_new_node(new_node):
     """
     agent = Controller(new_node)
     # 免密钥 & 获取新节点hostname
-    results = agent.run_tasks([tasks.Hostname().get(), tasks.SSHKey().generate()])
+    pub_key = get_pub_key()
+    results = agent.run_tasks([tasks.Hostname().get(), tasks.SSHKey().append(pub_key)])
 
     new_node_hostname = results[0].val
 
@@ -28,3 +32,25 @@ def add_new_node(new_node):
     nodes_agents.run_task(tasks.Hosts().update(data=hosts))
 
     models.Nodes(ip=new_node).save()
+
+
+def read_pub_key(file=PUB_KEY_FILE):
+    if os.path.isfile(file):
+        with open(file, 'r') as f:
+            data = f.read()
+            return data
+
+
+def gen_pub_key():
+    cmd = """ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa"""
+    run_cmd(cmd)
+
+
+def get_pub_key():
+    """如果有公钥读取， 没有生成"""
+    key = read_pub_key()
+    if key:
+        return key
+    else:
+        gen_pub_key()
+        return read_pub_key()
