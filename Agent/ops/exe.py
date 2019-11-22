@@ -1,6 +1,6 @@
 import subprocess
 import time
-from Agent.util.decorator import general_log
+from Agent.utils.decorator import general_log
 import logging
 from Agent import errors
 

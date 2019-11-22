@@ -57,3 +57,9 @@ def update_all_hosts(hosts_list):
 def get_local_hostname():
     hostname = exe.run_cmd('hostname').stdout.strip()
     return hostname
+
+
+def append_ssh_key(data):
+    file = os.path.join(os.path.expanduser('~'), '.ssh/authorized_keys')
+    with open(file, 'a+') as f:
+        f.write(data)

@@ -25,3 +25,9 @@ class Hosts:
         ret = deploy.update_all_hosts(hosts_list)
         resp.body = json.dumps(ret)
         resp.status = falcon.HTTP_200
+
+
+class SshKey:
+    def on_post(self, req, resp):
+        data = req.stream
+        deploy.append_ssh_key(data)
