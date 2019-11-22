@@ -1,8 +1,8 @@
 """一些复杂的业务逻辑"""
 import os
 from ControlServer.controller import Controllers, Controller
-from ControlServer.exe import run_cmd
-from ControlServer.constant import PUB_KEY_FILE
+from ControlServer import exe
+from ControlServer.constant import *
 from . import tasks, models
 
 
@@ -17,6 +17,7 @@ def add_new_node(new_node):
     results = agent.run_tasks([tasks.Hostname().get(), tasks.SSHKey().append(pub_key)])
 
     new_node_hostname = results[0].val
+    append_known_hosts(new_node)
 
     # 追加hostname
     all_nodes = models.Nodes.objects.values('ip').all()
@@ -43,7 +44,7 @@ def read_pub_key(file=PUB_KEY_FILE):
 
 def gen_pub_key():
     cmd = """ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa"""
-    run_cmd(cmd)
+    exe.run_cmd(cmd)
 
 
 def get_pub_key():
@@ -54,3 +55,13 @@ def get_pub_key():
     else:
         gen_pub_key()
         return read_pub_key()
+
+
+def append_known_hosts(ip):
+    """
+    把指定主机ip和公钥添加到known_hosts
+    :param ip:
+    :return:
+    """
+    exe.run_cmd("ssh-keygen -R {}".format(ip))
+    exe.run_cmd("ssh-keyscan -t ecdsa {} >> {}".format(ip, KNOWN_HOSTS))
