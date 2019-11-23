@@ -30,7 +30,7 @@ def add_new_node(new_node):
             hosts.append({'ip': result.node, 'hostname': result.val})
 
     nodes_agents.add_node(new_node)
-    nodes_agents.run_task(tasks.Hosts().update(data=hosts))
+    nodes_agents.run_task(tasks.Hosts().update(data={"hosts": hosts}))
 
     models.Nodes(ip=new_node).save()
 

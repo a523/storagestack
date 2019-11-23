@@ -50,8 +50,8 @@ class BaseController:
         return url
 
     async def _request(self, session, node, task):
-        async with session.request(task.method, url=self.gen_node_agent_url(node, task.path),
-                                   **task.kwargs) as resp:
+        async with session.request(task.method, url=self.gen_node_agent_url(node, task.path), json=task.data,
+                                   params=task.params, **task.kwargs) as resp:
             status_ok = is_ok(resp.status)
             if status_ok:
                 if task.format_type == 'json':
@@ -61,7 +61,7 @@ class BaseController:
                 logger.debug('{0}: Request {1} agent {2} succeed'.format(resp.status, resp.method, resp.url))
             else:
                 val = await resp.text()
-                logger.error("{0}: Request {1} agent {2} failed. {3}".format(resp.status, resp.method, resp.url, val))
+                logger.error("{0}: Request {1} agent {2} failed, args: {4}. {3}".format(resp.status, resp.method, resp.url, val, task.data))
                 if task.raise_exc:
                     raise errors.TaskException(node, task, val)
             result = Result(resp, val, status_ok, node, task)
@@ -178,3 +178,6 @@ class MultiTasksResult:
 
     def __iter__(self):
         return iter(self.results)
+
+    def __getitem__(self, item):
+        return self.results[item]

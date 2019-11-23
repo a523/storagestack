@@ -29,5 +29,5 @@ class Hosts:
 
 class SshKey:
     def on_post(self, req, resp):
-        data = req.stream
+        data = req.stream.read()
         deploy.append_ssh_key(data)
