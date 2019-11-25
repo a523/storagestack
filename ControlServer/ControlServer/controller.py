@@ -156,7 +156,7 @@ class SingleNodeMultiTasksResult:
 
 
 class MultiTasksResult:
-    def __init__(self, results: List):
+    def __init__(self, results: List[Result]):
         self.results = results
 
     def _analyze_results(self):
