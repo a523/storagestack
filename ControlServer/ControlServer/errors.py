@@ -26,7 +26,7 @@ class TaskException(Exception):
         super().__init__(node, task)
         self.node = node
         self.task = task
-        self.mess = mess
+        self.mess = mess  # 异常信息
 
     def __str__(self):
         return "Failed to '{0}' on node {1}. {2}".format(self.task.name, self.node, self.mess)
