@@ -1,7 +1,9 @@
 from django.test import TestCase
 from ControlServer import exe
-from ControlServer.controller import Result, MultiTasksResult
+from ControlServer.controller import *
+from deploy import tasks
 from unittest import mock
+from aiohttp.test_utils import make_mocked_coro, make_mocked_request, TestClient, ClientSession
 
 
 class RunExeTestCase(TestCase):
@@ -25,3 +27,13 @@ class MultiTasksResultTestCase(TestCase):
         for result in self.mul_r:
             self.assertIs(result, self.mul_r[i])
             i += 1
+
+
+class ControllerTestCase(TestCase):
+    def setUp(self) -> None:
+        self.agent = Controller(node='127.0.0.1')
+
+    def test_single_task(self):
+        with mock.patch.object(BaseController, '_request', make_mocked_coro()) as request:
+            self.agent.run_task(tasks.Hostname().get())
+            request.assert_called()
