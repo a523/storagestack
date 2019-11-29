@@ -1,6 +1,6 @@
 ### TODO:
 - 支持debug模式启动？显示不同日志？
-- webServer, 中间件， 出现未捕获的错误，写日志，返回http
+
 
 ### HOWTO (实现细节)
 #### 部署
@@ -15,3 +15,6 @@
 >3. `ssh-keyscan -t ecdsa 172.16.32.128 >> known_hosts` 
 获取目标主机公钥并添加到known_hosts
 
+
+### DONE
+- webServer, 中间件， 出现未捕获的错误，写日志，返回http
