@@ -4,5 +4,5 @@ from . import views
 app_name = 'deploy'
 
 urlpatterns = [
-    path('nodes/', views.Nodes.as_view())
+    path('nodes/', views.Nodes.as_view(), name='nodes')
 ]

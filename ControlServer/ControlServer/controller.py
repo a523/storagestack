@@ -3,6 +3,7 @@ from typing import List
 import logging
 import aiohttp
 import asyncio
+from aiohttp import client_exceptions
 
 from . import errors
 from .utils import is_ok
@@ -50,22 +51,26 @@ class BaseController:
         return url
 
     async def _request(self, session, node, task):
-        async with session.request(task.method, url=self.gen_node_agent_url(node, task.path), json=task.data,
-                                   params=task.params, **task.kwargs) as resp:
-            status_ok = is_ok(resp.status)
-            if status_ok:
-                if task.format_type == 'json':
-                    val = await resp.json()
+        try:
+            async with session.request(task.method, url=self.gen_node_agent_url(node, task.path), json=task.data,
+                                       params=task.params, **task.kwargs) as resp:
+                status_ok = is_ok(resp.status)
+                if status_ok:
+                    if task.format_type == 'json':
+                        val = await resp.json()
+                    else:
+                        val = await resp.text()
+                    logger.debug('{0}: Request {1} agent {2} succeed'.format(resp.status, resp.method, resp.url))
                 else:
                     val = await resp.text()
-                logger.debug('{0}: Request {1} agent {2} succeed'.format(resp.status, resp.method, resp.url))
-            else:
-                val = await resp.text()
-                logger.error("{0}: Request {1} agent {2} failed, args: {4}. {3}".format(resp.status, resp.method, resp.url, val, task.data))
-                if task.raise_exc:
-                    raise errors.TaskException(node, task, val)
-            result = Result(resp, val, status_ok, node, task)
-            return result
+                    logger.error("{0}: Request {1} agent {2} failed, args: {4}. {3}".format(resp.status, resp.method, resp.url, val, task.data))
+                    if task.raise_exc:
+                        raise errors.TaskException(node, task, val)
+                result = Result(resp, val, status_ok, node, task)
+                return result
+        except client_exceptions.ClientError as e:
+            logger.error(e)
+            raise errors.RequestAgentError(node, task)
 
     async def single_node_request(self, node, request_task):
         async with aiohttp.ClientSession() as session:

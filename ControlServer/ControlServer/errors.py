@@ -4,29 +4,25 @@ class ControlServerError(Exception):
 
 
 class RequestAgentError(ControlServerError):
-    def __init__(self, resp, method, args=None):
-        super().__init__(resp, method, args)
-        self.resp = resp
-        self.method = method
-        self.args = args
+    """转发请求给Agent时发生错误"""
+
+    def __init__(self, node, task):
+        super().__init__(node, task)
+        self.node = node
+        self.task = task
 
     def __str__(self):
-        return "Failed to request agent ({0}: {1}), " \
-               "code: {2}, message: {3}, args: {4}".format(self.method
-                                                           , self.resp.url,
-                                                           self.resp.status_code,
-                                                           self.resp.text,
-                                                           self.args)
+        return "Failed to request {} agent for task '{}'.".format(self.node, self.task.name or self.task.path)
 
 
 class TaskException(Exception):
     """任务在Node上执行时出错"""
 
-    def __init__(self, node, task, mess=''):
+    def __init__(self, node, task, raw_err=''):
         super().__init__(node, task)
         self.node = node
         self.task = task
-        self.mess = mess  # 异常信息
+        self.raw_err = raw_err  # 异常信息
 
     def __str__(self):
-        return "Failed to '{0}' on node {1}. {2}".format(self.task.name, self.node, self.mess)
+        return "Failed to execute task '{0}' on node {1}.{2}".format(self.task, self.node, " " + self.raw_err)

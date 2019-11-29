@@ -1,9 +1,10 @@
 from django.test import TestCase
 from ControlServer import exe
 from ControlServer.controller import *
+from ControlServer.errors import RequestAgentError, TaskException
 from deploy import tasks
-from unittest import mock
-from aiohttp.test_utils import make_mocked_coro, make_mocked_request, TestClient, ClientSession
+from unittest.mock import patch, create_autospec, MagicMock
+from aiohttp.test_utils import make_mocked_coro
 
 
 class RunExeTestCase(TestCase):
@@ -15,8 +16,8 @@ class RunExeTestCase(TestCase):
 
 class MultiTasksResultTestCase(TestCase):
     def setUp(self) -> None:
-        self.mock_result_1 = mock.create_autospec(Result)
-        self.mock_result_2 = mock.create_autospec(Result)
+        self.mock_result_1 = create_autospec(Result)
+        self.mock_result_2 = create_autospec(Result)
         self.mul_r = MultiTasksResult([self.mock_result_1, self.mock_result_2])
 
     def test_getitem_as_list(self):
@@ -34,6 +35,29 @@ class ControllerTestCase(TestCase):
         self.agent = Controller(node='127.0.0.1')
 
     def test_single_task(self):
-        with mock.patch.object(BaseController, '_request', make_mocked_coro()) as request:
+        with patch.object(BaseController, '_request', make_mocked_coro()) as request:
             self.agent.run_task(tasks.Hostname().get())
             request.assert_called()
+
+
+class CustomExceptionMiddlewareTestCase(TestCase):
+    def test_task_exception_can_return_409(self):
+        with patch('deploy.views.Nodes.post') as mock_post:
+            node = '127.0.0.1',
+            mock_post.side_effect = TaskException(node, 'test_task_exception')
+            resp = self.client.post('/deploy/nodes/', {'ip': node})
+            self.assertContains(resp, '执行任务时出错', status_code=409)
+
+    def test_request_exception_can_return_409(self):
+        with patch('deploy.views.Nodes.post') as mock_post:
+            node = '127.0.0.1',
+            # mock_task = MagicMock()
+            mock_post.side_effect = RequestAgentError(node, tasks.Hostname().get())
+            resp = self.client.post('/deploy/nodes/', {'ip': node})
+            self.assertContains(resp, '联系节点', status_code=409)
+
+    def test_other_exception_can_return_500(self):
+        with patch('deploy.views.Nodes.post') as mock_post:
+            mock_post.side_effect = Exception('未知错误')
+            resp = self.client.post('/deploy/nodes/', )
+            self.assertContains(resp, '未知错误', status_code=500)
