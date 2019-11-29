@@ -23,6 +23,7 @@
     
 ### QuickStart
 #### AGENT
+> AGENT 需要部署在集群中的每个节点上
 ##### 开发环境部署：
 - 启动web服务
 ```shell
