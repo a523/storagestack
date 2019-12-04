@@ -28,5 +28,5 @@ urlpatterns = [
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),  # 可选
     path('deploy/', include('deploy.urls', namespace='deploy')),
-    path('users/', include('user_admin.urls', namespace='user_admin'))
+    path('user-admin/', include('user_admin.urls', namespace='user_admin'))
 ]
