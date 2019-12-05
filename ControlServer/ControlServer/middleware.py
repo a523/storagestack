@@ -18,6 +18,9 @@ class CustomExceptionMiddleware(MiddlewareMixin):
         elif isinstance(exception, errors.RequestAgentError):
             logger.error("Error in handle {request}, {task}".format(request=request, task=exception))
             return HttpResponse("联系节点\"{}\"时出错".format(exception.node), status=409)
+        elif isinstance(exception, AssertionError):
+            logger.error("Error in handle {request}, {task}".format(request=request, task=exception))
+            return HttpResponse("出错，请检查输入或环境，{}".format(exception), status=400)
         else:
             if not settings.DEBUG:
                 return HttpResponse("未知错误, 请查看日志或联系作者: {}".format(exception), status=500)
