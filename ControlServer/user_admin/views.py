@@ -2,6 +2,7 @@ from django.contrib.auth import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 from user_admin.serializers import UserSerializer
 
 
@@ -19,3 +20,9 @@ class Users(APIView):
             new_user = user_serial.save()
             new_user = UserSerializer(new_user).data
             return Response(data=new_user, status=status.HTTP_201_CREATED)
+
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+
+    queryset = models.User.objects.all()
+    serializer_class = UserSerializer
