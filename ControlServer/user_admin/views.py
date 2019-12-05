@@ -16,6 +16,6 @@ class Users(APIView):
         """创建新用户， 不可以是超级用户， 可以是管理员， 超级用户只允许通过命令行创建"""
         user_serial = UserSerializer(data=request.data)
         if user_serial.is_valid(raise_exception=True):
-            new_user = models.User.objects.create_user(user_serial.data)
+            new_user = user_serial.save()
             new_user = UserSerializer(new_user).data
             return Response(data=new_user, status=status.HTTP_201_CREATED)

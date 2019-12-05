@@ -1,11 +1,12 @@
-from django.test import TestCase, modify_settings
+from django.test import modify_settings
 from django.urls import reverse
+from rest_framework.test import APITestCase
 
 
 @modify_settings(MIDDLEWARE={
     'remove': 'ControlServer.middleware.CustomExceptionMiddleware',
 })
-class UserTestCase(TestCase):
+class UserTestCase(APITestCase):
     def test_get_user_list(self):
         resp = self.client.get(reverse('user_admin:users_list'))
         self.assertEqual(resp.status_code, 200, resp.data)
@@ -13,7 +14,7 @@ class UserTestCase(TestCase):
 
     def test_create_user(self):
         user_info = {'username': 'xin', 'password': 'test_a!'}
-        resp = self.client.post(reverse('user_admin:users_list'), user_info)
+        resp = self.client.post(reverse('user_admin:users_list'), user_info, format='json')
         self.assertEqual(resp.status_code, 201, resp.data)
         new_user_info = resp.json()
         user_id = new_user_info['id']
