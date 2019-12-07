@@ -19,7 +19,7 @@
 ### TODO LIST
 1. 安装集群
     - 基本web 后端 和 agent
-    
+2. 用户登录和权限
     
 ### QuickStart
 #### AGENT

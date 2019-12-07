@@ -23,6 +23,13 @@ class Users(APIView):
 
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-
     queryset = models.User.objects.all()
     serializer_class = UserSerializer
+
+
+class UserSelf(APIView):
+    def get(self, request):
+        """获取登录用户自己的信息"""
+        user = request.user
+        user = UserSerializer(user).data
+        return Response(user)
