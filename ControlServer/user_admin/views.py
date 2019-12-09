@@ -1,15 +1,19 @@
-from django.contrib.auth import models
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
+from ControlServer.utils import PermissionLabelMixin
 from user_admin.serializers import UserSerializer
+from functools import wraps
+
+User = get_user_model()
 
 
 class Users(APIView):
     def get(self, request):
         """获取所有用户列表"""
-        users = models.User.objects.defer('password').all()
+        users = User.objects.defer('password').all()
         users = UserSerializer(users, many=True).data
         return Response(data=users, status=status.HTTP_200_OK)
 
@@ -23,11 +27,34 @@ class Users(APIView):
 
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = models.User.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class UserSelf(APIView):
+def permission_label(code_name, desc=None):
+    """具体某一个操作的权限定义和检验"""
+
+    def decorator(func):
+        # 定义权限
+        permission = {"code_name": code_name}
+        if desc:
+            permission["desc"] = desc
+        func.permission = permission
+
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            # 检验权限
+            print(args)
+            return func(*args, **kwargs)
+
+        return wrap
+
+    return decorator
+
+
+class UserSelf(PermissionLabelMixin, APIView):
+
+    @permission_label(code_name="get_self_info", desc="获取个人信息")
     def get(self, request):
         """获取登录用户自己的信息"""
         user = request.user

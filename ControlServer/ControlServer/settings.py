@@ -36,8 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'deploy',
     'rest_framework',
+    'deploy',
+    'user_admin',
 ]
 
 MIDDLEWARE = [
@@ -152,13 +153,19 @@ LOGGING = {
     }
 }
 
+
+AUTH_USER_MODEL = 'user_admin.User'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated',  # 所有API都需要登录
+        ]
 }
 
 SIMPLE_JWT = {

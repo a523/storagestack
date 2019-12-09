@@ -26,9 +26,13 @@ password： storage_stack
 通过web创建新用户，不可以是超级用户，可以是管理员。
 超级用户只允许通过命令行创建。
 
+只有超级用户才可以指配谁为管理员，管理员可以新建，删除，修改用户分组
+普通用户通过加入不同组可以获得不同权限，或添加单项权限。
+普通用户可以无任何权限，即只可以看出自己的个人中心。
 
-
-
+以编程方式创建权限:
+动态地创建用户权限， 通过post_migrate信号
+https://docs.djangoproject.com/zh-hans/3.0/ref/signals/#django.db.models.signals.post_migrate
 
 ### DONE
 - webServer, 中间件， 出现未捕获的错误，写日志，返回http
