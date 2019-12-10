@@ -18,7 +18,3 @@ def is_ok(code):
         return True
     else:
         return False
-
-
-class PermissionLabelMixin:
-    permission_label = {}

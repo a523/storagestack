@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from ControlServer.utils import PermissionLabelMixin
 from user_admin.serializers import UserSerializer
 from functools import wraps
 
@@ -36,7 +35,7 @@ def permission_label(code_name, desc=None):
 
     def decorator(func):
         # 定义权限
-        permission = {"code_name": code_name}
+        permission = {"codename": code_name}
         if desc:
             permission["desc"] = desc
         func.permission = permission
@@ -52,9 +51,8 @@ def permission_label(code_name, desc=None):
     return decorator
 
 
-class UserSelf(PermissionLabelMixin, APIView):
+class UserSelf(APIView):
 
-    @permission_label(code_name="get_self_info", desc="获取个人信息")
     def get(self, request):
         """获取登录用户自己的信息"""
         user = request.user

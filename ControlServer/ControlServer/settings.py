@@ -153,8 +153,7 @@ LOGGING = {
     }
 }
 
-
-AUTH_USER_MODEL = 'user_admin.User'
+AUTH_USER_MODEL = 'user_admin.User'  # 自定义用户model
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -164,8 +163,8 @@ REST_FRAMEWORK = {
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.IsAuthenticated',  # 所有API都需要登录
-        ]
+        'rest_framework.permissions.IsAuthenticated',  # 所有API都需要登录
+    ]
 }
 
 SIMPLE_JWT = {

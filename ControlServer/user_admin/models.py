@@ -44,11 +44,11 @@ class Permission(models.Model):
         (PUT, "put"),
         (DELETE, "delete"),
     ]
-    desc = models.CharField(_('desc'), max_length=255)
-    codename = models.CharField(_('codename'), max_length=100)
     app = models.CharField(_('app'), max_length=100)
-    method = models.CharField(_('method'), choices=METHOD, max_length=8)
+    codename = models.CharField(_('codename'), max_length=100)
     view = models.CharField(_('view'), max_length=100)
+    method = models.CharField(_('method'), choices=METHOD, max_length=8)
+    desc = models.CharField(_('desc'), max_length=255)
 
     class Meta:
         verbose_name = _('permission')
