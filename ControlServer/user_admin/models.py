@@ -44,7 +44,7 @@ class ActionPermission(models.Model):
         return (self.app,) + (self.codename,)
 
 
-class MyUser(User):
+class ExtendUser(User):
     class Meta:
         proxy = True
 
