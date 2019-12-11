@@ -153,8 +153,6 @@ LOGGING = {
     }
 }
 
-AUTH_USER_MODEL = 'user_admin.User'  # 自定义用户model
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',

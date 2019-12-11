@@ -52,7 +52,7 @@ def permission_label(code_name, desc=None):
 
 
 class UserSelf(APIView):
-
+    @permission_label(code_name='get_self', desc='获取自己的信息')
     def get(self, request):
         """获取登录用户自己的信息"""
         user = request.user

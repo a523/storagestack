@@ -2,7 +2,7 @@ from types import FunctionType
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.module_loading import import_module, import_string
 from django.conf import settings
-from user_admin.models import Permission
+from user_admin.models import ActionPermission
 
 installed_apps = settings.INSTALLED_APPS
 
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                             permission['app'] = app
                             permission['method'] = method
                             permission['view'] = view_name
-                            Permission.objects.update_or_create(**permission)
+                            ActionPermission.objects.update_or_create(**permission)
         except Exception as e:
             raise CommandError(str(e))
 
