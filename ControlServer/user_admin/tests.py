@@ -54,3 +54,7 @@ class UserTestCase(APITestCase):
         user = self.create_user()
         resp = self.client.delete(reverse('user_admin:user_detail', kwargs={'pk': user.json()['id']}))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+
+# 测试自定义验证
+# class UserTestCase(APITestCase):
