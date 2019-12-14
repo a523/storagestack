@@ -162,8 +162,11 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # 所有API都需要登录
+        'user_admin.permissions.ActionPermission'
     ]
 }
+
+AUTH_USER_MODEL = 'user_admin.User'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),

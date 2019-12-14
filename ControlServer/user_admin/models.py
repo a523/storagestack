@@ -1,10 +1,32 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, AbstractUser
 
 
-User = get_user_model()
+class ExtendUser(AbstractUser):
+    def get_user_action_permissions(self):
+        if not self.is_active or self.is_anonymous:
+            return set()
+        if self.is_superuser:
+            return ActionPermission.objects.all()
+        return self.action_permissions.all()
+
+    def get_group_action_permissions(self):
+        if not self.is_active or self.is_anonymous:
+            return set()
+        if self.is_superuser:
+            return ActionPermission.objects.all()
+        user_groups_field = self._meta.get_field('groups')
+        user_groups_query = 'groups__%s' % user_groups_field.related_query_name()
+        return ActionPermission.objects.filter(**{user_groups_query: self})
+
+    def get_all_action_permissions(self):
+        if not self.is_active or self.is_anonymous:
+            return set()
+        return {
+            *self.get_user_action_permissions(),
+            *self.get_group_action_permissions(),
+        }
 
 
 class ActionPermission(models.Model):
@@ -26,7 +48,7 @@ class ActionPermission(models.Model):
     view = models.CharField(_('view'), max_length=100)
     method = models.CharField(_('method'), choices=METHOD, max_length=8)
     desc = models.CharField(_('desc'), max_length=255)
-    users = models.ManyToManyField(User, verbose_name=_('users'), related_name='action_permissions',
+    users = models.ManyToManyField(ExtendUser, verbose_name=_('users'), related_name='action_permissions',
                                    related_query_name='action_permission', blank=True, )
     groups = models.ManyToManyField(Group, verbose_name=_('groups'), related_name='action_permissions',
                                     related_query_name='action_permission', blank=True, )
@@ -42,32 +64,3 @@ class ActionPermission(models.Model):
 
     def natural_key(self):
         return (self.app,) + (self.codename,)
-
-
-class ExtendUser(User):
-    class Meta:
-        proxy = True
-
-    def get_user_action_permissions(self):
-        if not self.is_active or self.is_anonymous:
-            return set()
-        if self.is_superuser:
-            return ActionPermission.objects.all()
-        return self.action_permissions.all()
-
-    def get_group_action_permissions(self):
-        if not self.is_active or self.is_anonymous:
-            return set()
-        if self.is_superuser:
-            return ActionPermission.objects.all()
-        user_groups_field = get_user_model()._meta.get_field('groups')
-        user_groups_query = 'groups__%s' % user_groups_field.related_query_name()
-        return ActionPermission.objects.filter(**{user_groups_query: self})
-
-    def get_all_action_permissions(self):
-        if not self.is_active or self.is_anonymous:
-            return set()
-        return {
-            *self.get_user_action_permissions(),
-            *self.get_group_action_permissions(),
-        }

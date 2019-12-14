@@ -1,10 +1,11 @@
+from functools import wraps
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
 from user_admin.serializers import UserSerializer
-from functools import wraps
+
 
 User = get_user_model()
 
@@ -42,8 +43,6 @@ def permission_label(code_name, desc=None):
 
         @wraps(func)
         def wrap(*args, **kwargs):
-            # 检验权限
-            print(args)
             return func(*args, **kwargs)
 
         return wrap
