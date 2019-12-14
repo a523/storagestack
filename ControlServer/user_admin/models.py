@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group, AbstractUser
 
 
-class ExtendUser(AbstractUser):
+class User(AbstractUser):
     def get_user_action_permissions(self):
         if not self.is_active or self.is_anonymous:
             return set()
@@ -48,7 +48,7 @@ class ActionPermission(models.Model):
     view = models.CharField(_('view'), max_length=100)
     method = models.CharField(_('method'), choices=METHOD, max_length=8)
     desc = models.CharField(_('desc'), max_length=255)
-    users = models.ManyToManyField(ExtendUser, verbose_name=_('users'), related_name='action_permissions',
+    users = models.ManyToManyField(User, verbose_name=_('users'), related_name='action_permissions',
                                    related_query_name='action_permission', blank=True, )
     groups = models.ManyToManyField(Group, verbose_name=_('groups'), related_name='action_permissions',
                                     related_query_name='action_permission', blank=True, )
