@@ -8,6 +8,9 @@ class ActionPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         method = request.method.lower()
+        method_func = getattr(view, method)
+        if not hasattr(method_func, 'permission'):
+            return True
         view_permission = getattr(view, method).permission
         view_permission_key = (view.__module__.split('.')[0],) + (view_permission['codename'],)
         if not view_permission:
