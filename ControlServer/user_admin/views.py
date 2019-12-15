@@ -4,8 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from user_admin.serializers import UserSerializer
-
+from user_admin.serializers import *
 
 User = get_user_model()
 
@@ -31,12 +30,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
 
-def permission_label(code_name, desc=None):
+def permission_label(codename, desc=None):
     """具体某一个操作的权限定义和检验"""
 
     def decorator(func):
         # 定义权限
-        permission = {"codename": code_name}
+        permission = {"codename": codename}
         if desc:
             permission["desc"] = desc
         func.permission = permission
@@ -51,9 +50,12 @@ def permission_label(code_name, desc=None):
 
 
 class UserSelf(APIView):
-    @permission_label(code_name='get_self', desc='获取自己的信息')
+    @permission_label(codename='get_self', desc='获取自己的信息')
     def get(self, request):
         """获取登录用户自己的信息"""
         user = request.user
-        user = UserSerializer(user).data
-        return Response(user)
+        user_dict = UserSerializer(user).data
+        act_permiss = user.get_all_action_permissions()
+        all_action_permissions = ActionPermissionSerializer(act_permiss, many=True).data
+        user_dict['all_action_permissions'] = all_action_permissions
+        return Response(user_dict)
