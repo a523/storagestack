@@ -53,7 +53,7 @@ class User(AbstractUser):
         if self.is_superuser:
             return ActionPermission.objects.all()
         user_groups_field = self._meta.get_field('groups')
-        user_groups_query = 'groups__%s' % user_groups_field.related_query_name()
+        user_groups_query = 'group__%s' % user_groups_field.related_query_name()
         return ActionPermission.objects.filter(**{user_groups_query: self})
 
     def get_all_action_permissions(self):
