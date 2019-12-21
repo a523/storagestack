@@ -13,7 +13,7 @@ class ActionPermissionSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    action_permissions = ActionPermissionSerializer(many=True)
+    action_permissions = ActionPermissionSerializer(many=True, required=False)
 
     class Meta:
         model = User

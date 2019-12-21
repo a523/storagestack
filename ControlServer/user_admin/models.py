@@ -38,7 +38,7 @@ class ActionPermission(models.Model):
 
 
 class User(AbstractUser):
-    action_permissions = models.ManyToManyField(ActionPermission, verbose_name=_('action_permissions'), blank=True, )
+    action_permissions = models.ManyToManyField(ActionPermission, verbose_name=_('action_permissions'), blank=True)
 
     def get_user_action_permissions(self):
         if not self.is_active or self.is_anonymous:
