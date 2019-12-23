@@ -163,7 +163,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # 所有API都需要登录
         'user_admin.permissions.ActionPermission'
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema' # 文档
 }
 
 AUTH_USER_MODEL = 'user_admin.User'
