@@ -22,7 +22,11 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+        action_permissions = validated_data.pop('action_permissions',  None)
+        groups = validated_data.pop('groups', None)
+        user = User.objects.create_user(**validated_data)
+        # TODO add action_permissions when create user
+        return user
 
     def update(self, instance, validated_data):
         # TODO 修改的时候可以不提供username

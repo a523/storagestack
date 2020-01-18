@@ -6,9 +6,12 @@ from rest_framework import status
 
 User = get_user_model()
 
+
 @modify_settings(MIDDLEWARE={
     'remove': 'ControlServer.middleware.CustomExceptionMiddleware',
-})
+},
+    REST_FRAMEWORK={'remove': 'DEFAULT_PERMISSION_CLASSES'}
+)
 class UserTestCase(APITestCase):
     def create_user(self):
         user_info = {'username': 'xin', 'password': 'test_a!'}
@@ -57,5 +60,35 @@ class UserTestCase(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 
-# 测试自定义验证
-# class UserTestCase(APITestCase):
+# 测试自定义用户修改验证
+class UserModifyPermissionTestCase(APITestCase):
+    def setUp(self) -> None:
+        # 创建超级用户和管理员用户
+        self.superuser = User.objects.create_superuser(username='superuser', password='superuser_password')
+        self.staff_user = User.objects.create_user(username='staff_user', is_staff=True, password='staff_user_password')
+        self.general_user = User.objects.create_user(username='user', password='general_user_password')
+
+    def test_cannot_delete_superuser(self):
+        url = reverse('user_admin:user_detail', kwargs={'pk': self.superuser.id})
+        self.client.login(username='superuser', password='superuser_password')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_delete_general_user(self):
+        general_user = User.objects.create_user(username='user_temp', password='general_user_password')
+        url = reverse('user_admin:user_detail', kwargs={'pk': general_user.id})
+        self.client.login(username='staff_user', password='staff_user_password')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+
+    def test_general_user_cannot_delete_admin(self):
+        url = reverse('user_admin:user_detail', kwargs={'pk': self.staff_user.id})
+        self.client.login(username='user', password='general_user_password')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_super_can_delete_admin_user(self):
+        url = reverse('user_admin:user_detail', kwargs={'pk': self.staff_user.id})
+        self.client.login(username='superuser', password='superuser_password')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
