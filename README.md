@@ -25,7 +25,7 @@
 #### AGENT
 > AGENT 需要部署在集群中的每个节点上
 ##### 开发环境部署：
-- 启动web服务
+- 启动agent服务
 ```shell
 gunicorn --reload  Agent.app:api --bind 0.0.0.0:8600
 ```
