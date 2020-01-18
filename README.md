@@ -19,10 +19,11 @@
 ### TODO LIST
 1. 安装集群
     - 基本web 后端 和 agent
-    
+2. 用户登录和权限
     
 ### QuickStart
 #### AGENT
+> AGENT 需要部署在集群中的每个节点上
 ##### 开发环境部署：
 - 启动web服务
 ```shell
