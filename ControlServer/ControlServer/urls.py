@@ -15,9 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.documentation import include_docs_urls
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView
+)
 
 urlpatterns = [
+    path('', include_docs_urls(title="StorageStack API DOCS", authentication_classes=[], permission_classes=[])),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('deploy/', include('deploy.urls', namespace='deploy'))
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),  # 可选
+    path('deploy/', include('deploy.urls', namespace='deploy')),
+    path('user-admin/', include('user_admin.urls', namespace='user_admin')),
 ]

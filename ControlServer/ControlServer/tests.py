@@ -58,6 +58,12 @@ class CustomExceptionMiddlewareTestCase(TestCase):
 
     def test_other_exception_can_return_500(self):
         with patch('deploy.views.Nodes.post') as mock_post:
-            mock_post.side_effect = Exception('未知错误')
+            mock_post.side_effect = Exception('测试用未知错误')
             resp = self.client.post('/deploy/nodes/', )
             self.assertContains(resp, '未知错误', status_code=500)
+
+    def test_assertException_can_return_400(self):
+        with patch('deploy.views.Nodes.post') as mock_post:
+            mock_post.side_effect = AssertionError('测试用断言错误')
+            resp = self.client.post('/deploy/nodes/', )
+            self.assertContains(resp, '断言错误', status_code=400)
