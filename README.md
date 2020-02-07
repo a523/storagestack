@@ -31,6 +31,8 @@ gunicorn --reload  Agent.app:api --bind 0.0.0.0:8600
 ```
 
 #### WebServer
+在Linux或Unix系统上请先创建文件夹 /var/log/storage_stack,
+并赋予权限
 ```shell
 python manage.py runserver
 ```
