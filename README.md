@@ -34,5 +34,11 @@ gunicorn --reload  Agent.app:api --bind 0.0.0.0:8600
 在Linux或Unix系统上请先创建文件夹 /var/log/storage_stack,
 并赋予权限
 ```shell
+# 创建数据库表
+python manage.py migrate
+# 启动开发服务
 python manage.py runserver
+
+# 创建超级用户
+python manage.py createsuperuser  # 大部分API都需要登录
 ```
