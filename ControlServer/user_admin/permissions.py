@@ -13,7 +13,10 @@ class ActionPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         method = request.method.lower()
-        method_func = getattr(view, method)
+        try:
+            method_func = getattr(view, method)
+        except AttributeError as e:
+            return True   # 忽略权限检查
         if not hasattr(method_func, 'permission'):
             return True
         view_permission = getattr(view, method).permission
@@ -57,7 +60,7 @@ class UserModifyPermission(permissions.BasePermission):
                         return True
                 else:
                     return False
-            except (KeyError, User.DoesNotExist, User.MultipleObjectsReturned) as e:
+            except (User.DoesNotExist, User.MultipleObjectsReturned) as e:
                 logger.warning('A error in the permission check will be judged to be unprivileged')
                 logger.warning(e)
-                return False
+                return True  # 获取实例失败， 忽略权限检查
