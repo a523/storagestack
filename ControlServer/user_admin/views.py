@@ -36,6 +36,11 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.data.setdefault('password', instance.password)
+        return self.update(request, *args, **kwargs)
+
 
 def check_create_user_permission(login_user, target_user):
     """新创建用户权限检查"""
