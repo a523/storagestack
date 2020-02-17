@@ -4,39 +4,42 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 
+
 User = get_user_model()
 
 
 @modify_settings(MIDDLEWARE={
     'remove': 'ControlServer.middleware.CustomExceptionMiddleware',
-},
-    REST_FRAMEWORK={'remove': 'DEFAULT_PERMISSION_CLASSES'}
-)
+})
 class UserTestCase(APITestCase):
+    def setUp(self) -> None:
+        self.superuser = User.objects.create_superuser(username='super', password='superuser')
+        self.client.force_login(self.superuser)
+
     def create_user(self):
         user_info = {'username': 'xin', 'password': 'test_a!'}
         resp = self.client.post(reverse('user_admin:users_list'), user_info, format='json')
+        self.assertEqual(resp.status_code, 201, resp.data)
         return resp
-
-    def test_get_user_list(self):
-        resp = self.client.get(reverse('user_admin:users_list'))
-        self.assertEqual(resp.status_code, 200, resp.data)
-        self.assertTrue(isinstance(resp.json(), list))
 
     def test_create_user(self):
         resp = self.create_user()
-        self.assertEqual(resp.status_code, 201, resp.data)
         new_user_info = resp.json()
         user_id = new_user_info['id']
         self.assertTrue(isinstance(new_user_info, dict))
         self.assertTrue(isinstance(user_id, int))
         self.assertFalse(new_user_info['is_superuser'], "设计应不能通过web创建超级用户")
 
+    def test_get_user_list(self):
+        resp = self.client.get(reverse('user_admin:users_list'))
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertTrue(isinstance(resp.json(), list))
+
     def test_get_user_detail(self):
         user = self.create_user()
         resp = self.client.get(reverse('user_admin:user_detail', kwargs={'pk': user.json()['id']}))
         self.assertEqual(resp.status_code, 200, resp.data)
-        self.assertEqual(resp.json()['id'], 1)
+        self.assertEqual(resp.json()['id'], user.json()['id'])
         self.assertEqual(resp.json()['username'], 'xin')
 
     def test_update_user(self):
@@ -54,13 +57,21 @@ class UserTestCase(APITestCase):
         u = User.objects.get(id=user['id'])
         self.assertTrue(u.check_password(data['password']))
 
+    def test_update_user_no_password(self):
+        general_user = User.objects.create_user(username='user', password='general_user_password')
+        url = reverse('user_admin:user_detail', kwargs={'pk': general_user.id})
+        new_data_no_pw = {'username': 'new_name'}
+        response = self.client.put(url, data=new_data_no_pw)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('username'), new_data_no_pw['username'])
+
     def test_delete_user(self):
         user = self.create_user()
         resp = self.client.delete(reverse('user_admin:user_detail', kwargs={'pk': user.json()['id']}))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
 
-# 测试自定义用户修改验证
+# 测试自定义用户修改权限验证
 class UserModifyPermissionTestCase(APITestCase):
     def setUp(self) -> None:
         # 创建超级用户和管理员用户
