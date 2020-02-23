@@ -24,12 +24,12 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         action_permissions = validated_data.pop('action_permissions',  None)
         groups = validated_data.pop('groups', None)
+        validated_data.pop('user_permissions', None)  # 目前不需要用到user_permissions
         user = User.objects.create_user(**validated_data)
         # TODO add action_permissions when create user
         return user
 
     def update(self, instance, validated_data):
-        # TODO 修改的时候可以不提供username
         password = validated_data.get('password')
         if password:
             instance.set_password(password)

@@ -37,5 +37,7 @@ password： storage_stack
 动态地创建用户权限， 通过post_migrate信号
 https://docs.djangoproject.com/zh-hans/3.0/ref/signals/#django.db.models.signals.post_migrate
 
+- 是否可以删除超级用户？
+  >可以，（待修改）
 ### DONE
 - webServer, 中间件， 出现未捕获的错误，写日志，返回http

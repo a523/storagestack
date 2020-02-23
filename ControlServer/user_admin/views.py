@@ -23,8 +23,8 @@ class Users(APIView):
         user_serial = UserSerializer(data=request.data)
         if user_serial.is_valid(raise_exception=True):
             target_user = user_serial.initial_data
-            can_operate = check_create_user_permission(login_user, target_user)
-            if not can_operate:
+            create_permission = check_create_user_permission(login_user, target_user)
+            if not create_permission:
                 return Response(status=status.HTTP_403_FORBIDDEN)
             new_user = user_serial.save()
             new_user = UserSerializer(new_user).data
@@ -35,6 +35,11 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAdminUser, UserModifyPermission)
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.data.setdefault('password', instance.password)
+        return self.update(request, *args, **kwargs)
 
 
 def check_create_user_permission(login_user, target_user):
