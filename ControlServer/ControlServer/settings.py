@@ -121,7 +121,14 @@ STATIC_URL = '/static/'
 AGENT_PORT = 8600
 AGENT_SCHEME = 'http'
 
-LOG_PATH_PREFIX = '/var/log/storage_stack' if os.name is 'posix' else os.path.join(os.path.expanduser('~'))
+DEBUG_LOG = os.path.join(BASE_DIR, 'log')
+
+LOG_PATH_PREFIX = DEBUG_LOG if DEBUG else (
+    '/var/log/storage_stack' if os.name is 'posix' else os.path.join(os.path.expanduser('~'))
+)
+
+if not os.path.exists(LOG_PATH_PREFIX):
+    os.makedirs(LOG_PATH_PREFIX, exist_ok=True)
 
 LOGGING = {
     'version': 1,
